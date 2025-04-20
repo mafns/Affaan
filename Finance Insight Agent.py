@@ -2,10 +2,13 @@ import yfinance as yf
 from bs4 import BeautifulSoup
 import requests
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import tkinter as tk
+from tkinter import scrolledtext
 
 # Initialize sentiment analyzer
 analyzer = SentimentIntensityAnalyzer()
 
+# Functions for stock and sentiment
 def get_stock_info(ticker):
     stock = yf.Ticker(ticker)
     info = stock.info
@@ -36,10 +39,38 @@ def classify_sentiment(scores):
     else:
         return "Neutral"
 
-# Example usage
-ticker = "AAPL"
-print(get_stock_info(ticker))
-news = get_news_sentiment("Apple Inc")
-for title, score in news:
-    print(f"Headline: {title} | Sentiment Score: {score:.2f}")
-print("Overall Sentiment:", classify_sentiment(news))
+# GUI Function
+def fetch_data():
+    ticker = entry.get().upper()
+    if not ticker:
+        output_box.insert(tk.END, "Please enter a ticker symbol.\n")
+        return
+
+    try:
+        output_box.delete(1.0, tk.END)  # Clear previous text
+        stock_info = get_stock_info(ticker)
+        news_sentiments = get_news_sentiment(ticker)
+        sentiment_summary = classify_sentiment(news_sentiments)
+
+        output_box.insert(tk.END, f"{stock_info}\n\nTop News Headlines & Sentiments:\n")
+        for title, score in news_sentiments:
+            output_box.insert(tk.END, f"Headline: {title}\nSentiment Score: {score:.2f}\n\n")
+        output_box.insert(tk.END, f"Overall Sentiment: {sentiment_summary}\n")
+
+    except Exception as e:
+        output_box.insert(tk.END, f"Error fetching data: {e}\n")
+
+# GUI setup
+root = tk.Tk()
+root.title("Stock Info & Sentiment Analyzer")
+
+tk.Label(root, text="Enter Stock Ticker Symbol:").pack(pady=5)
+entry = tk.Entry(root, width=30)
+entry.pack(pady=5)
+
+tk.Button(root, text="Get Info", command=fetch_data).pack(pady=5)
+
+output_box = scrolledtext.ScrolledText(root, width=80, height=20)
+output_box.pack(padx=10, pady=10)
+
+root.mainloop()
