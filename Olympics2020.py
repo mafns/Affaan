@@ -1,5 +1,5 @@
 import mysql.connector
-connobj=mysql.connector.connect(host='localhost',user='root',passwd='Lohith22')
+connobj=mysql.connector.connect(host='localhost',user='root',passwd='Affaan')
 if connobj.is_connected():
     print("Connection established")
 else:
